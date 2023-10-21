@@ -20,15 +20,26 @@ int main(int argc, char* argv)
 	}
 	
 	//create the file pointer
-	FILE* fptr;
+	FILE* fp;
 
 	//open the file in read mode, use rb since this is a non-text file
 	fp = fopen(argv[1], "rb");
+	
+	//char* for the destination mac
+	char destMac[12];
 
-	//calculate filesize
-	int fileSize = ftell(fp);
+	//read the destination mac
+	fread(destMac, 12, 1, fp)
 
-	printf(fileSize);
+	//print the destination mac
+	for (int i = 0; i < 12; i++)
+	{
+		fprint(destMac[i]);
+		if (i > 0 && i % 2 == 0)
+		{
+			fprint(":");
+		}
+	}
 
 	//close the file
 	fclose(fp);
