@@ -37,20 +37,73 @@ int main(int argc, char** argv)
 	}
 	
 	//int[] for the reading of binary file
-	char data[4];
+	unsigned char data[6];
 
 	//read the destination MAC
 	fread(&data, sizeof(data), 1, fp);
 	
+	printf("Destination MAC address: ");
 	//print the destination MAC
 	for(int i = 0; i < sizeof(data); i++)
 	{
+		printf("%02x", data[i]);
+		if(i != sizeof(data) - 1)printf(":");
+	}
+	printf("\n");
 	
-		printf("%d%d:%d%d", data[0], data[1], data[2], data[3]);
+	//read the Source MAC address
+	fread(&data, sizeof(data), 1, fp);
+	
+	printf("Source MAC address: ");
+	//print the destination MAC
+	for(int i = 0; i < sizeof(data); i++)
+	{
+		printf("%02x", data[i]);
+		if(i != sizeof(data) - 1)printf(":");
+	}
+	printf("\n");
+	
+	unsigned char type[2];
+	
+	fread(&type, sizeof(type), 1, fp);
+	//print the type
+	printf("Type: ");
+	for(int i = 0; i < 2; i++)
+	{
+		printf("%02x", type[i]);
+	}
+	printf("\n");
+	
+	//print the rest of the file, will do in batches of 8
+	printf("Payload: \n");
+	
+	unsigned char payload[8];
+	
+	//get end of file
+	while(!feof(fp))
+	{
+		//4 columns
+		for(int i = 0; i < 4; i++)
+		{
+			//read 8 bytes
+			fread(&payload, sizeof(payload), 1, fp);
+			
+			//print 8 bytes
+			for(int j = 0; j < 8; j++)
+			{
+				
+				printf("%02x ", payload[j]);
+			
+			}
+			//tab
+			printf("\t");
+		
+		}
+		//new line after 4 columns
+		printf("\n");
 	
 	}
-
-
+	
 	//close the file
 	fclose(fp);
 }
