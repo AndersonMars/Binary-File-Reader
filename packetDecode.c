@@ -89,78 +89,25 @@ int main(int argc, char** argv)
 	unsigned char version;
 	fread(&version, sizeof(version), 1, fp);
 	
-	int bits[8];
-	
-	for(int i = 7; i >= 0; i--)
-	{
-		bits[i] = ((version >> i) & 1);
-	}
-	
-	//now convert the first half of the bits array into decimal, and that is the version
-	//convert the second half and that is the ihl
-	int ver = 0;
-	char hexVer;
+	//idk why, but I have to do it this way for the correct output?
+	unsigned char ihl = version << 4;
+	ihl = ihl >> 4;
+	version = version >> 4;
 
-	for(int i = 7; i >= 4; i--)
-	{
-		if(bits[i] == 1)
-		{
-			if(i == 4) ver += 1;
-			else if(i == 5) ver += 2;
-			else if(i == 6) ver += 4;
-			else if(i == 7) ver += 8;
-		}
-	}
-
-	//check if ver is greater than 9, if it is, convert to a,b,c,d,e,f
-	if(ver == 10) hexVer = 'a';
-	else if(ver == 11) hexVer = 'b';
-	else if(ver == 12) hexVer = 'c';
-	else if(ver == 13) hexVer = 'd';
-	else if(ver == 14) hexVer = 'e';
-	else if(ver == 15) hexVer = 'f';
-	else hexVer = ver;
-
-	int ihl = 0;
-	char hexIhl;
-
-	for(int i = 0; i < 4; i++)
-	{
-
-		if(bits[i] == 1)
-		{
-			if(i == 0) ihl += 1;
-			else if(i == 1) ihl += 2;
-			else if(i == 2) ihl += 4;
-			else if(i == 3) ihl += 8;
-		}
-
-	}
-
-	if(ihl == 10) hexIhl = 'a';
-	else if(ihl == 11) hexIhl = 'b';
-	else if(ihl == 12) hexIhl = 'c';
-	else if(ihl == 13) hexIhl = 'd';
-	else if(ihl == 14) hexIhl = 'e';
-	else if(ihl == 15) hexIhl = 'f';
-	else hexIhl = ihl;
-
-	bool option;
-	if(ihl > 5 || ihl == 'a' || ihl == 'b' || ihl == 'c' || ihl == 'd' || ihl == 'e' || ihl == 'f') option = true;
-	else option = false;
-	
-	
 	printf("Version: %25s", " ");
 	
-	printf("%02x", hexVer);
+	printf("%02x", version);
 	
 	printf("\n");
 		
 	printf("Internet Header Length: %10s", " ");
 	
-	printf("%02x", hexIhl);
+	printf("%02x", ihl);
 	
 	printf("\n");
+
+	int ihlDecimal = hexToDecimal(ihl);
+	bool option = ihlDecimal > 5;
 	
 	//for the next byte, 6 bits belong to the DSCP, while the other 2 belong to the ECN
 	unsigned char dscp;
@@ -285,26 +232,14 @@ int main(int argc, char** argv)
 	}
 	else
 	{
-		//print the number and then add the suffix to the end for an ordinal number
-		printf("%x", hexIhl);
-
-		//get tthe suffix for the ordinal number
-		switch(ihl % 10)
+		int optionCount = 0;
+		int options = hexToDecimal(ihl);
+		for(int i = options; i > 5; i--)
 		{
-			case 1:
-				printf("st Option: ");
-			case 2:
-				printf("nd Option: ");
-			case 3:
-				printf("rd Option: ");
-			default:
-				printf("th Option: ");
-		}
-
-		//print the 4 bits of the ihl
-		for(int i = 7; i >= 4; i++)
-		{
-			printf("%d", bits[i]);
+			unsigned char optionByte[4];
+			fread(&optionByte, sizeof(optionByte), 1, fp);
+			printf("Option Word %d: %19s0x%02x%02x%02x%02x\n", optionCount, " ", optionByte[0], optionByte[1], optionByte[2], optionByte[3]);
+			optionCount++;
 		}
 	}
 
